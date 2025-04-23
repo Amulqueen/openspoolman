@@ -1,0 +1,50 @@
+version: "3.8"
+services:
+  spoolman:
+    image: ghcr.io/donkie/spoolman:latest
+    environment:
+      - SPOOLMAN_DB_PATH=/opt/spoolman/data/spoolman.db
+    container_name: spoolman
+    restart: unless-stopped
+    ports:
+      - "7912:8000"
+    volumes:
+      - /opt/spoolman/data:/home/app/.local/share/spoolman
+
+  openspoolman_printer_1:
+    image: ghcr.io/xento/openspoolman:latest
+    container_name: openspoolman_printer_1
+    environment:
+      OPENSPOOLMAN_BASE_URL: "https://PRINTERNAME1.DOMAIN.COM/select_printer?"
+      PRINTER_ID: "******************"
+      PRINTER_NAME: "********"
+      PRINTER_ACCESS_CODE: "********"
+      PRINTER_IP: "000.000.000.000"
+      SPOOLMAN_BASE_URL: "http://INTERNAL.IP.OF.SPOOLMAN:7912"
+      AUTO_SPEND: "True"
+    ports:
+      - "7914:8000"  # Exposing on a different port for printer 1
+    volumes:
+      - /opt/openspoolman/logs:/home/app/logs
+      - /opt/openspoolman/data:/home/app/data
+      - /opt/openspoolman/prints:/home/app/static/prints
+    restart: unless-stopped
+
+  openspoolman_printer_2:
+    image: ghcr.io/xento/openspoolman:latest
+    container_name: openspoolman_printer_2
+    environment:
+      OPENSPOOLMAN_BASE_URL: "https://PRINTERNAME1.DOMAIN.COM/select_printer?"
+      PRINTER_ID: "******************"
+      PRINTER_NAME: "********"
+      PRINTER_ACCESS_CODE: "********"
+      PRINTER_IP: "000.000.000.000"
+      SPOOLMAN_BASE_URL: "http://INTERNAL.IP.OF.SPOOLMAN:7912"
+      AUTO_SPEND: "True"
+    ports:
+      - "7915:8000"  # Exposing on a different port for printer 2
+    volumes:
+      - /opt/openspoolman/logs:/home/app/logs
+      - /opt/openspoolman/data:/home/app/data
+      - /opt/openspoolman/prints:/home/app/static/prints
+    restart: unless-stopped
