@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Printer</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 2rem; }
+        a { display: block; margin: 1rem; font-size: 1.5rem; text-decoration: none; color: #007BFF; }
+    </style>
+</head>
+<body>
+    <h1>Select a Printer</h1>
+
+    <div id="tagBox" style="margin: 1rem; font-size: 1.2rem;"></div>
+    <div id="links"></div>
+    <div style="margin-top: 3rem;">
+        <button onclick="history.back()" style="padding: 10px 20px; font-size: 1rem;">Back</button>
+    </div>
+
+
+    <div class="text-center" style="margin-top: 2rem;">
+    <!-- Write current tag_id -->
+    <button onclick="writeNFC()" style="padding: 10px 20px; font-size: 1rem; background-color: #28a745; color: white; border: none; border-radius: 5px;">
+        Write Tag with This ID
+    </button>
+    <div id="writeStatus" style="margin-top: 1rem; font-size: 1rem; color: #333;"></div>
+
+    <!-- Manual tag entry -->
+    <div style="margin-top: 2rem;">
+        <input type="text" id="manualTagId" placeholder="Enter new tag ID" style="padding: 10px; font-size: 1rem; width: 250px; max-width: 80%;">
+        <button onclick="writeCustomTag()" style="padding: 10px 20px; font-size: 1rem; background-color: #007bff; color: white; border: none; border-radius: 5px; margin-left: 10px;">
+            Write New Tag ID
+        </button>
+        <div id="customWriteStatus" style="margin-top: 1rem; font-size: 1rem; color: #333;"></div>
+    </div>
+    </div>
+
+    <div id="writeStatus" style="margin-top: 1rem; font-size: 1rem; color: #333;"></div>
+    </div>
+
+    <script>
+        const rawQuery = window.location.search;
+        let tagId = "";
+
+        if (rawQuery.includes("tag_id=")) {
+            tagId = rawQuery.split("tag_id=")[1];
+        }
+
+        const tagBox = document.getElementById("tagBox");
+        const linkDiv = document.getElementById("links");
+
+        if (tagId) {
+            tagBox.textContent = `Tag ID: ${tagId}`;
+            linkDiv.innerHTML = `
+                <button onclick="location.href='https://PRINTERNAME1.DOMAIN.COM/spool_info?tag_id=${tagId}'" style="padding: 10px 20px; margin: 1rem; font-size: 1.2rem;">Send to Printer 1</button>
+                <button onclick="location.href='https://PRINTERNAME2.DOMAIN.COM/spool_info?tag_id=${tagId}'" style="padding: 10px 20px; margin: 1rem; font-size: 1.2rem;">Send to Printer 2</button>
+            `;
+        } else {
+            tagBox.textContent = "No tag ID provided.";
+        }
+    </script>
+    <script>
+        function writeNFC() {
+            const writeStatus = document.getElementById("writeStatus");
+            writeStatus.textContent = "Bring NFC Tag closer to the phone...";
+
+        if ('NDEFReader' in window) {
+            const ndef = new NDEFReader();
+            const urlToWrite = `https://SPOOLMAN.DOMAIN.COM/select_printer?/spool_info?tag_id=${tagId}`;
+
+            ndef.write({
+                records: [{ recordType: "url", data: urlToWrite }]
+            }).then(() => {
+                writeStatus.style.color = "green";
+                writeStatus.textContent = "Tag written successfully!";
+            }).catch(err => {
+                writeStatus.style.color = "red";
+                writeStatus.textContent = `Failed to write: ${err.message}`;
+            });
+        } else {
+            writeStatus.style.color = "red";
+            writeStatus.textContent = "Your device/browser does not support Web NFC.";
+        }
+    }
+   </script>
+
+   <script>
+    function writeCustomTag() {
+        const customStatus = document.getElementById("customWriteStatus");
+        const newTagId = document.getElementById("manualTagId").value.trim();
+
+        if (!newTagId) {
+            customStatus.style.color = "red";
+            customStatus.textContent = "Please enter a tag ID first.";
+            return;
+        }
+
+        customStatus.textContent = "Bring NFC Tag closer to the phone...";
+
+        if ('NDEFReader' in window) {
+            const ndef = new NDEFReader();
+            const customURL = `https://SPOOLMAN.DOMAIN.COM/select_printer?/spool_info?tag_id=${newTagId}`;
+
+            ndef.write({
+                records: [{ recordType: "url", data: customURL }]
+            }).then(() => {
+                customStatus.style.color = "green";
+                customStatus.textContent = `Tag written successfully with ID: ${newTagId}`;
+            }).catch(err => {
+                customStatus.style.color = "red";
+                customStatus.textContent = `Failed to write: ${err.message}`;
+            });
+        } else {
+            customStatus.style.color = "red";
+            customStatus.textContent = "Your device/browser does not support Web NFC.";
+        }
+    }
+   </script>
+</body>
+</html>
+
+
